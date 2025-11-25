@@ -22,6 +22,14 @@
   - **Smart Source Selection**: Otomatis membedakan antara link embed langsung (Donghua) dan fetch via ID (Anime).
 - **Dark Mode UI**: Desain antarmuka gelap yang nyaman di mata.
 
+## 📸 Galeri Aplikasi (Screenshots)
+
+Berikut adalah tampilan antarmuka Emptyvy dalam mode gelap:
+
+| Home Screen | Detail Anime | Video Player | Pencarian |
+|:---:|:---:|:---:|:---:|
+| <img src="https://appwrite.dibohost.my.id/v1/storage/buckets/6926356c002d9ac02cc3/files/692637660006e29fa60d/view?project=69255f3d0030cb0bae67" width="200"> | <img src="https://appwrite.dibohost.my.id/v1/storage/buckets/6926356c002d9ac02cc3/files/69263770002bf8b49185/view?project=69255f3d0030cb0bae67" width="200"> | <img src="https://appwrite.dibohost.my.id/v1/storage/buckets/6926356c002d9ac02cc3/files/692637760020779253c0/view?project=69255f3d0030cb0bae67" width="200"> | <img src="https://appwrite.dibohost.my.id/v1/storage/buckets/6926356c002d9ac02cc3/files/6926377d00050be69e46/view?project=69255f3d0030cb0bae67" width="200"> |
+
 ## 🛠️ Teknologi & Library
 
 - **Framework**: [Flutter](https://flutter.dev/)
