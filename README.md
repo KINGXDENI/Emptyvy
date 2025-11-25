@@ -126,8 +126,8 @@ Project ini dikembangkan dengan ❤️ oleh:
 
 | Nama | Peran | GitHub |
 | :--- | :--- | :--- |
-| **[Nama Anda]** | Lead Developer | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KINGXDEN) |
-| **[Nama Teman]** | Contributor | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/username-teman) |
+| **[Muh. Deni Setiawan]** | Lead Developer | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KINGXDEN) |
+| **[M Firas Rizaldiansyah]** | Contributor | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/username-teman) |
 
 ## 🙏 Ucapan Terima Kasih (Special Thanks)
 
