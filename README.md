@@ -120,11 +120,20 @@ Cara berkontribusi:
 4.  Push ke branch tersebut (`git push origin fitur-keren-anda`).
 5.  Buat **Pull Request**.
 
+## 👥 Authors
+
+Project ini dikembangkan dengan ❤️ oleh:
+
+| Nama | Peran | GitHub |
+| :--- | :--- | :--- |
+| **[Nama Anda]** | Lead Developer | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KINGXDEN) |
+| **[Nama Teman]** | Contributor | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/username-teman) |
+
 ## 🙏 Ucapan Terima Kasih (Special Thanks)
 
 Proyek ini tidak akan terwujud tanpa sumber daya luar biasa berikut:
 
-  * **[Sanka Vollerei](https://www.sankavollerei.com/)**: Terima kasih atas penyediaan API publik yang memungkinkan aplikasi ini mengambil data Anime dan Donghua.
+  * **[Sanka Vollerei](https://github.com/SankaVollerei)**: Terima kasih khusus atas penyediaan API publik yang memungkinkan aplikasi ini mengambil data Anime dan Donghua.
   * **Otakudesu & Anichin**: Sebagai sumber data konten original.
   * **Komunitas Flutter Indonesia**: Atas tutorial dan diskusinya yang bermanfaat.
   * **Gemini AI**: Sebagai partner diskusi (coding assistant) dalam mempercepat proses pengembangan aplikasi ini.
@@ -139,6 +148,3 @@ Aplikasi ini dibuat semata-mata untuk tujuan **edukasi dan pembelajaran** pengem
 
 -----
 
-\<p align="center"\>
-Dibuat dengan ❤️ dan ☕ menggunakan Flutter.
-\</p\>
