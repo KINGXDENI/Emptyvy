@@ -8,28 +8,28 @@
 
 ## ✨ Fitur Utama
 
-* **Multi-Content Support**: Pemisahan tab khusus untuk **Anime** (Jepang) dan **Donghua** (China).
-* **Home Screen Dinamis**:
-    * Menampilkan Anime/Donghua yang sedang tayang (*Ongoing*).
-    * Menampilkan Anime/Donghua yang baru tamat (*Completed*).
-* **Pencarian Cerdas (Smart Search)**: Pencarian kontekstual (Mencari Anime saat di tab Anime, dan Donghua saat di tab Donghua).
-* **Infinite Scroll**: Memuat daftar konten secara otomatis saat layar digulir ke bawah (Pagination).
-* **Detail Info**: Sinopsis, Rating, Genre, Studio, dan daftar episode lengkap.
-* **Integrated Video Player**:
-    * Menggunakan **WebView** untuk memutar video dari berbagai sumber (Vidhide, Filedon, dll).
-    * Dukungan pemilihan kualitas (360p, 480p, 720p).
-    * Navigasi Episode (Next/Prev) langsung dari player.
-    * **Smart Source Selection**: Otomatis membedakan antara link embed langsung (Donghua) dan fetch via ID (Anime).
-* **Dark Mode UI**: Desain antarmuka gelap yang nyaman di mata.
+- **Multi-Content Support**: Pemisahan tab khusus untuk **Anime** (Jepang) dan **Donghua** (China).
+- **Home Screen Dinamis**:
+  - Menampilkan Anime/Donghua yang sedang tayang (_Ongoing_).
+  - Menampilkan Anime/Donghua yang baru tamat (_Completed_).
+- **Pencarian Cerdas (Smart Search)**: Pencarian kontekstual (Mencari Anime saat di tab Anime, dan Donghua saat di tab Donghua).
+- **Infinite Scroll**: Memuat daftar konten secara otomatis saat layar digulir ke bawah (Pagination).
+- **Detail Info**: Sinopsis, Rating, Genre, Studio, dan daftar episode lengkap.
+- **Integrated Video Player**:
+  - Menggunakan **WebView** untuk memutar video dari berbagai sumber (Vidhide, Filedon, dll).
+  - Dukungan pemilihan kualitas (360p, 480p, 720p).
+  - Navigasi Episode (Next/Prev) langsung dari player.
+  - **Smart Source Selection**: Otomatis membedakan antara link embed langsung (Donghua) dan fetch via ID (Anime).
+- **Dark Mode UI**: Desain antarmuka gelap yang nyaman di mata.
 
 ## 🛠️ Teknologi & Library
 
-* **Framework**: [Flutter](https://flutter.dev/)
-* **Bahasa**: Dart
-* **State Management**: `setState` (Native) & `FutureBuilder`
-* **Dependencies**:
-    * [`http`](https://pub.dev/packages/http): Untuk mengambil data dari API.
-    * [`webview_flutter`](https://pub.dev/packages/webview_flutter): Untuk memutar video embed.
+- **Framework**: [Flutter](https://flutter.dev/)
+- **Bahasa**: Dart
+- **State Management**: `setState` (Native) & `FutureBuilder`
+- **Dependencies**:
+  - [`http`](https://pub.dev/packages/http): Untuk mengambil data dari API.
+  - [`webview_flutter`](https://pub.dev/packages/webview_flutter): Untuk memutar video embed.
 
 ## 📂 Struktur Proyek
 
@@ -54,7 +54,7 @@ lib/
 ├── services/             # Logika API (Fetch Data)
 │   └── api_service.dart
 └── main.dart             # Entry point
-````
+```
 
 ## 🚀 Instalasi & Menjalankan
 
@@ -76,23 +76,23 @@ Ikuti langkah-langkah ini untuk menjalankan proyek di mesin lokal Anda:
 3.  **Konfigurasi Android (Penting\!)**
     Aplikasi ini menggunakan `webview_flutter`, jadi pastikan konfigurasi berikut sudah benar:
 
-      * **Min SDK Version**: Buka `android/app/build.gradle` dan ubah `minSdkVersion` menjadi **21**.
+    - **Min SDK Version**: Buka `android/app/build.gradle` dan ubah `minSdkVersion` menjadi **21**.
 
-        ```gradle
-        defaultConfig {
-            // ...
-            minSdkVersion 21
-            // ...
-        }
-        ```
+      ```gradle
+      defaultConfig {
+          // ...
+          minSdkVersion 21
+          // ...
+      }
+      ```
 
-      * **Izin Internet**: Buka `android/app/src/main/AndroidManifest.xml` dan tambahkan izin internet:
+    - **Izin Internet**: Buka `android/app/src/main/AndroidManifest.xml` dan tambahkan izin internet:
 
-        ```xml
-        <manifest xmlns:android="[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)" package="com.example.emptyvy">
-            <uses-permission android:name="android.permission.INTERNET"/>
-            <application ...
-        ```
+      ```xml
+      <manifest xmlns:android="[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)" package="com.example.emptyvy">
+          <uses-permission android:name="android.permission.INTERNET"/>
+          <application ...
+      ```
 
 4.  **Jalankan Aplikasi**
     Pastikan emulator atau device fisik terhubung.
@@ -107,10 +107,10 @@ Proyek ini masih dalam tahap pengembangan awal dan kami sangat terbuka untuk kol
 
 Beberapa hal yang bisa dikembangkan:
 
-  * [ ] **Fitur Comic**: Mengimplementasikan tab Comic yang saat ini masih placeholder.
-  * [ ] **History & Bookmark**: Menyimpan riwayat tontonan dan anime favorit (menggunakan SQLite/Hive).
-  * [ ] **Peningkatan UI Player**: Menambahkan kontrol kustom untuk video player.
-  * [ ] **Search Filter**: Menambahkan filter berdasarkan Genre di pencarian.
+- [ ] **Fitur Comic**: Mengimplementasikan tab Comic yang saat ini masih placeholder.
+- [ ] **History & Bookmark**: Menyimpan riwayat tontonan dan anime favorit (menggunakan SQLite/Hive).
+- [ ] **Peningkatan UI Player**: Menambahkan kontrol kustom untuk video player.
+- [ ] **Search Filter**: Menambahkan filter berdasarkan Genre di pencarian.
 
 Cara berkontribusi:
 
@@ -124,27 +124,26 @@ Cara berkontribusi:
 
 Project ini dikembangkan dengan ❤️ oleh:
 
-| Nama | Peran | GitHub |
-| :--- | :--- | :--- |
-| **[Muh. Deni Setiawan]** | Lead Developer | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KINGXDEN) |
-| **[M Firas Rizaldiansyah]** | Contributor | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/username-teman) |
+| Nama                      | Peran          | GitHub                                                                                                                                            |
+| :------------------------ | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Muh. Deni Setiawan**    | Lead Developer | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/KINGXDEN)       |
+| **M Firas Rizaldiansyah** | Contributor    | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/username-teman) |
 
 ## 🙏 Ucapan Terima Kasih (Special Thanks)
 
 Proyek ini tidak akan terwujud tanpa sumber daya luar biasa berikut:
 
-  * **[Sanka Vollerei](https://github.com/SankaVollerei)**: Terima kasih khusus atas penyediaan API publik yang memungkinkan aplikasi ini mengambil data Anime dan Donghua.
-  * **Otakudesu & Anichin**: Sebagai sumber data konten original.
-  * **Komunitas Flutter Indonesia**: Atas tutorial dan diskusinya yang bermanfaat.
-  * **Gemini AI**: Sebagai partner diskusi (coding assistant) dalam mempercepat proses pengembangan aplikasi ini.
+- **[Sanka Vollerei](https://github.com/SankaVollerei)**: Terima kasih khusus atas penyediaan API publik yang memungkinkan aplikasi ini mengambil data Anime dan Donghua.
+- **Otakudesu & Anichin**: Sebagai sumber data konten original.
+- **Komunitas Flutter Indonesia**: Atas tutorial dan diskusinya yang bermanfaat.
+- **Gemini AI**: Sebagai partner diskusi (coding assistant) dalam mempercepat proses pengembangan aplikasi ini.
 
 ## ⚠️ Disclaimer
 
 Aplikasi ini dibuat semata-mata untuk tujuan **edukasi dan pembelajaran** pengembangan aplikasi mobile.
 
-  * **Emptyvy** tidak menghosting video apa pun di servernya sendiri.
-  * Semua konten disediakan oleh pihak ketiga yang tidak berafiliasi dengan pengembang aplikasi ini.
-  * Gunakan dengan bijak.
+- **Emptyvy** tidak menghosting video apa pun di servernya sendiri.
+- Semua konten disediakan oleh pihak ketiga yang tidak berafiliasi dengan pengembang aplikasi ini.
+- Gunakan dengan bijak.
 
------
-
+---
