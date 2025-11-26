@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:emptyvy/models/comic_detail_model.dart';
 import 'package:emptyvy/models/comic_read_model.dart';
+import 'package:emptyvy/models/comic_search_model.dart';
 import 'package:emptyvy/models/donghua_detail_model.dart';
 import 'package:emptyvy/models/donghua_model.dart';
 import 'package:emptyvy/models/pagination_model.dart';
@@ -356,6 +357,28 @@ class ApiService {
       throw Exception('Gagal load Chapter');
     } catch (e) {
       throw Exception('Error fetching chapter: $e');
+    }
+  }
+  Future<List<ComicSearchItem>> searchComic(String query) async {
+    // URL: .../comic/komikcast/search/:query/1
+    // Kita default ke page 1 dulu sesuai request
+    final url = '$_baseUrl/comic/komikcast/search/$query/1';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        if (data['success'] == true && data['data'] != null) {
+          final List<dynamic> items = data['data'];
+          return items.map((e) => ComicSearchItem.fromJson(e)).toList();
+        }
+      }
+      return []; // Return list kosong jika gagal/tidak ada data
+    } catch (e) {
+      print('Error searching comic: $e');
+      return [];
     }
   }
 }

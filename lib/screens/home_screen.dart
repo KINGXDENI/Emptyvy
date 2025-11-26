@@ -50,13 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               // Cek Tab Aktif
               // 0: Anime, 1: Donghua, 2: Comic
-              bool isDonghuaSearch = _currentIndex == 1;
+             bool isDonghuaSearch = _currentIndex == 1;
+             bool isComicSearch = _currentIndex == 2;
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => SearchScreen(
-                    isDonghua: isDonghuaSearch, // Kirim parameter
+                    isDonghua: isDonghuaSearch, // ⭐ Kirim status Donghua
+                    isComic: isComicSearch, // ⭐ Kirim status Comic
                   ),
                 ),
               );

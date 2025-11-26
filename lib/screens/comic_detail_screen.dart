@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/comic_detail_model.dart';
 import '../services/api_service.dart';
-import 'comic_read_screen.dart'; // Pastikan import ini ada untuk navigasi baca
+import 'comic_read_screen.dart';
 
 class ComicDetailScreen extends StatefulWidget {
-  final String slug; // Slug diterima dari halaman Home
+  final String slug;
 
   const ComicDetailScreen({super.key, required this.slug});
 
@@ -14,8 +14,11 @@ class ComicDetailScreen extends StatefulWidget {
 
 class _ComicDetailScreenState extends State<ComicDetailScreen> {
   late Future<ComicDetailData> _futureDetail;
-  bool _isAscending =
-      false; // State untuk mengurutkan chapter (Terbaru/Terlama)
+  bool _isAscending = false; // State sorting
+
+  // --- Pagination State ---
+  int _currentPage = 0;
+  final int _itemsPerPage = 20;
 
   @override
   void initState() {
@@ -48,7 +51,6 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
           IconButton(
             icon: const Icon(Icons.share, color: Colors.white),
             onPressed: () {
-              // Placeholder untuk fitur share
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Fitur Share segera hadir")),
               );
@@ -96,30 +98,38 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
           } else if (snapshot.hasData) {
             final data = snapshot.data!;
 
-            // Logika Sorting Chapter
-            // Kita copy list agar tidak mengubah data asli secara permanen
-            final chapters = List<DetailChapter>.from(data.chapters);
+            // 1. Sorting Logic
+            final allChapters = List<DetailChapter>.from(data.chapters);
             if (_isAscending) {
-              // Urutkan dari Chapter 1 ke Chapter Terakhir (Ascending)
-              // Logika sort sederhana berdasarkan string title.
-              // Untuk hasil lebih akurat, parsing nomor chapter diperlukan,
-              // tapi compareTo string cukup untuk kebutuhan dasar.
-              chapters.sort((a, b) => a.title.compareTo(b.title));
-            } else {
-              // Default API biasanya Descending (Terbaru di atas), jadi biarkan atau sort balik
-              // chapters.sort((a, b) => b.title.compareTo(a.title));
+              allChapters.sort((a, b) => a.title.compareTo(b.title));
             }
+
+            // 2. Pagination Logic
+            final totalChapters = allChapters.length;
+            final totalPages = (totalChapters / _itemsPerPage).ceil();
+
+            if (_currentPage >= totalPages && totalPages > 0) {
+              _currentPage = totalPages - 1;
+            }
+
+            final int startIndex = _currentPage * _itemsPerPage;
+            final int endIndex = (startIndex + _itemsPerPage < totalChapters)
+                ? startIndex + _itemsPerPage
+                : totalChapters;
+
+            final displayedChapters = (totalChapters > 0)
+                ? allChapters.sublist(startIndex, endIndex)
+                : <DetailChapter>[];
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- HEADER SECTION (Poster & Info Utama) ---
+                  // --- HEADER ---
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Poster Image
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
@@ -135,7 +145,6 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // Info Text
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,10 +199,9 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
 
-                  // --- GENRE CHIPS ---
+                  // --- GENRES ---
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -218,19 +226,23 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                       );
                     }).toList(),
                   ),
-
                   const SizedBox(height: 20),
 
-                  // --- ACTION BUTTONS (Baca Awal & Akhir) ---
+                  // --- ACTION BUTTONS ---
                   if (data.chapters.isNotEmpty)
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
-                              // Baca Chapter Terlama (Paling Bawah di list asli)
                               final firstCh = data.chapters.last;
-                              _openReader(firstCh.slug);
+                              // Pass full chapter list
+                              _openReader(
+                                firstCh.slug,
+                                data.title,
+                                firstCh.title,
+                                data.chapters,
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white10,
@@ -243,9 +255,14 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
-                              // Baca Chapter Terbaru (Paling Atas di list asli)
                               final lastCh = data.chapters.first;
-                              _openReader(lastCh.slug);
+                              // Pass full chapter list
+                              _openReader(
+                                lastCh.slug,
+                                data.title,
+                                lastCh.title,
+                                data.chapters,
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent,
@@ -256,7 +273,6 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                         ),
                       ],
                     ),
-
                   const SizedBox(height: 24),
 
                   // --- SYNOPSIS ---
@@ -277,15 +293,14 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                       height: 1.5,
                     ),
                   ),
-
                   const SizedBox(height: 24),
 
-                  // --- CHAPTER HEADER & FILTER ---
+                  // --- CHAPTER LIST HEADER ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Chapters (${data.chapters.length})",
+                        "Chapters ($totalChapters)",
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -296,6 +311,7 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                         onPressed: () {
                           setState(() {
                             _isAscending = !_isAscending;
+                            _currentPage = 0;
                           });
                         },
                         icon: Icon(
@@ -304,60 +320,119 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                               : Icons.arrow_downward,
                           color: Colors.redAccent,
                         ),
-                        tooltip: "Urutkan Chapter",
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 8),
 
-                  // --- CHAPTER LIST ---
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: chapters.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final chapter = chapters[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E1E),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ListTile(
-                          onTap: () {
-                            // NAVIGASI KE LAYAR BACA
-                            _openReader(chapter.slug);
-                          },
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 0,
+                  // --- CHAPTER LIST ITEMS ---
+                  if (displayedChapters.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        "Tidak ada chapter",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: displayedChapters.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final chapter = displayedChapters[index];
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E1E1E),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          title: Text(
-                            chapter.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                          child: ListTile(
+                            onTap: () => _openReader(
+                              chapter.slug,
+                              data.title,
+                              chapter.title,
+                              data.chapters,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 0,
+                            ),
+                            title: Text(
+                              chapter.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              chapter.date,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.chevron_right,
+                              color: Colors.white24,
                             ),
                           ),
-                          subtitle: Text(
-                            chapter.date,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
+                        );
+                      },
+                    ),
+
+                  // --- PAGINATION CONTROLS ---
+                  if (totalPages > 1) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: _currentPage > 0
+                                ? () => setState(() => _currentPage--)
+                                : null,
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              size: 18,
+                              color: _currentPage > 0
+                                  ? Colors.white
+                                  : Colors.white24,
                             ),
                           ),
-                          trailing: const Icon(
-                            Icons.chevron_right,
-                            color: Colors.white24,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              "Hal ${_currentPage + 1} / $totalPages",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  // Tambahan padding bawah agar list paling bawah tidak tertutup nav bar (jika ada)
-                  const SizedBox(height: 20),
+                          IconButton(
+                            onPressed: _currentPage < totalPages - 1
+                                ? () => setState(() => _currentPage++)
+                                : null,
+                            icon: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 18,
+                              color: _currentPage < totalPages - 1
+                                  ? Colors.white
+                                  : Colors.white24,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 30),
                 ],
               ),
             );
@@ -373,17 +448,27 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
     );
   }
 
-  // Helper untuk membuka Reader
-  void _openReader(String chapterSlug) {
+  // --- UPDATED NAVIGATOR ---
+  // Menerima List<DetailChapter> untuk dikirim ke Reader
+  void _openReader(
+    String chapterSlug,
+    String comicTitle,
+    String chapterTitle,
+    List<DetailChapter> chapters,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ComicReadScreen(chapterSlug: chapterSlug),
+        builder: (context) => ComicReadScreen(
+          chapterSlug: chapterSlug,
+          comicTitle: comicTitle,
+          chapterTitle: chapterTitle,
+          chapterList: chapters, // Kirim list chapter
+        ),
       ),
     );
   }
 
-  // Widget Helper untuk baris info (Rating, Status, Type)
   Widget _buildInfoRow(IconData icon, String text, Color iconColor) {
     return Row(
       children: [

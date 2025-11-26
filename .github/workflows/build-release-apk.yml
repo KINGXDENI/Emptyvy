@@ -78,7 +78,7 @@ jobs:
           name: "Release v${{ env.VERSION }}"
           body: "Automated build for version ${{ env.VERSION }}."
           artifacts: "build/artifacts/*"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           allowUpdates: true        # PENTING: Mengizinkan update release yang sudah ada
           replacesArtifacts: true   # PENTING: Menimpa file lama dengan yang baru
           makeLatest: true
