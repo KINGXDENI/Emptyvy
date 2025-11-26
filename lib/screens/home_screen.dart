@@ -4,9 +4,11 @@ import 'package:emptyvy/screens/donghua_see_all_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/anime_model.dart';
 import '../services/api_service.dart';
+import '../models/comic_model.dart';
 import 'detail_screen.dart';
 import 'see_all_screen.dart';
 import 'search_screen.dart';
+import 'comic_detail_screen.dart'; // <--- IMPORT TAMBAHAN
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               // Cek Tab Aktif
               // 0: Anime, 1: Donghua, 2: Comic
-              bool isDonghuaSearch = _currentIndex == 1; 
+              bool isDonghuaSearch = _currentIndex == 1;
 
               Navigator.push(
                 context,
@@ -797,25 +799,447 @@ class _DonghuaTabState extends State<DonghuaTab> {
     );
   }
 }
+
 // ============================================================================
 // 3. COMIC TAB (Placeholder)
 // ============================================================================
-class ComicTab extends StatelessWidget {
+class ComicTab extends StatefulWidget {
   const ComicTab({super.key});
 
   @override
+  State<ComicTab> createState() => _ComicTabState();
+}
+
+class _ComicTabState extends State<ComicTab> {
+  late Future<ComicHomeData> _futureComic;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    setState(() {
+      _futureComic = ApiService().fetchComicHome();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return RefreshIndicator(
+      onRefresh: () async {
+        _loadData();
+        await Future.delayed(const Duration(seconds: 1));
+      },
+      color: Colors.redAccent,
+      backgroundColor: const Color(0xFF1E1E1E),
+      child: FutureBuilder<ComicHomeData>(
+        future: _futureComic,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.redAccent),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.redAccent,
+                      size: 40,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Error: ${snapshot.error}",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _loadData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                      ),
+                      child: const Text("Coba Lagi"),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (snapshot.hasData) {
+            final data = snapshot.data!;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- 1. HOT UPDATES (Horizontal) ---
+                  _buildSectionTitle("Populer Minggu Ini"),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 240,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: data.hotUpdates.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        return _buildHotComicCard(data.hotUpdates[index]);
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // --- 2. PROJECT UPDATES (Horizontal Small) ---
+                  if (data.projectUpdates.isNotEmpty) ...[
+                    _buildSectionTitle("Project Update"),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180, // Lebih kecil dari hot
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: data.projectUpdates.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          return _buildProjectCard(data.projectUpdates[index]);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // --- 3. LATEST RELEASES (Vertical) ---
+                  _buildSectionTitle("Rilis Terbaru"),
+                  const SizedBox(height: 12),
+                  ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: data.latestReleases.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      return _buildLatestComicItem(data.latestReleases[index]);
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+          return const Center(
+            child: Text(
+              "Tidak ada data",
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // --- Widgets ---
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHotComicCard(ComicItem item) {
+    return GestureDetector(
+      // [NAVIGASI KE COMIC DETAIL]
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ComicDetailScreen(slug: item.slug),
+          ),
+        );
+      },
+      child: SizedBox(
+        width: 150,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      item.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: Colors.grey[800]),
+                    ),
+                  ),
+                  // Rating Badge
+                  if (item.rating != null)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              size: 10,
+                              color: Colors.black,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              item.rating!,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // Type Badge (Manhwa/Manga)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: _buildTypeBadge(item.type),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              item.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+            if (item.latestChapterString != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                item.latestChapterString!,
+                style: const TextStyle(color: Colors.grey, fontSize: 11),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProjectCard(ComicItem item) {
+    return GestureDetector(
+      // [NAVIGASI KE COMIC DETAIL]
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ComicDetailScreen(slug: item.slug),
+          ),
+        );
+      },
+      child: SizedBox(
+        width: 120,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  item.image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Container(color: Colors.grey[800]),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              item.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLatestComicItem(ComicItem item) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF252525),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.menu_book, size: 64, color: Colors.white24),
-          SizedBox(height: 16),
-          Text(
-            "Fitur Comic Segera Hadir",
-            style: TextStyle(color: Colors.white54),
+          // Gambar
+          GestureDetector(
+            // [NAVIGASI KE COMIC DETAIL]
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ComicDetailScreen(slug: item.slug),
+                ),
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.network(
+                item.image,
+                width: 80,
+                height: 110,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Container(width: 80, color: Colors.grey[800]),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Info & Chapters
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildTypeBadge(item.type, fontSize: 9),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // List Chapter Buttons (Max 3)
+                ...item.chapters.take(3).map((chapter) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6.0),
+                    child: InkWell(
+                      onTap: () {
+                        // TODO: Implementasi Baca Chapter jika sudah ada ReaderScreen
+                        print("Baca ${chapter.slug}");
+                      },
+                      borderRadius: BorderRadius.circular(4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              chapter.title,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                            Text(
+                              chapter.time,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTypeBadge(String type, {double fontSize = 10}) {
+    Color color;
+    switch (type.toLowerCase()) {
+      case 'manhwa':
+        color = Colors.blueAccent;
+        break;
+      case 'manhua':
+        color = Colors.purpleAccent;
+        break;
+      case 'manga':
+        color = Colors.redAccent;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color, width: 0.5),
+      ),
+      child: Text(
+        type,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

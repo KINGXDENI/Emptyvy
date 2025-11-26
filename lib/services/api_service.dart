@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:emptyvy/models/comic_detail_model.dart';
+import 'package:emptyvy/models/comic_read_model.dart';
 import 'package:emptyvy/models/donghua_detail_model.dart';
 import 'package:emptyvy/models/donghua_model.dart';
 import 'package:emptyvy/models/pagination_model.dart';
@@ -7,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../models/anime_model.dart';
 import '../models/anime_detail_model.dart';
 import '../models/episode_model.dart';
+import '../models/comic_model.dart';
 
 class ApiService {
   // Base Domain
@@ -192,7 +195,7 @@ class ApiService {
 
   // Fetch Donghua See All (Latest/Ongoing)
   // type: 'latest' atau 'ongoing'
- Future<List<DonghuaItem>> fetchDonghuaList(String type, int page) async {
+  Future<List<DonghuaItem>> fetchDonghuaList(String type, int page) async {
     // URL: .../anime/donghua/latest/1
     final url = '$_baseUrl/anime/donghua/$type/$page';
 
@@ -247,6 +250,7 @@ class ApiService {
       throw Exception('Error: $e');
     }
   }
+
   // === TAMBAHKAN INI: Fetch Episode Donghua ===
   Future<EpisodeDetail> fetchDonghuaEpisode(String slug) async {
     // Perhatikan URL-nya beda: /anime/donghua/episode/
@@ -268,6 +272,7 @@ class ApiService {
       throw Exception('Error: $e');
     }
   }
+
   Future<List<DonghuaItem>> searchDonghua(String query) async {
     final url = '$_baseUrl/anime/donghua/search/$query';
 
@@ -287,6 +292,70 @@ class ApiService {
       return [];
     } catch (e) {
       throw Exception('Gagal mencari donghua: $e');
+    }
+  }
+
+  Future<ComicHomeData> fetchComicHome() async {
+    const url = '$_baseUrl/comic/komikcast/home';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        // Cek struktur JSON root
+        if (data['success'] == true && data['data'] != null) {
+          return ComicHomeData.fromJson(data);
+        }
+      }
+      throw Exception('Gagal load Comic Home');
+    } catch (e) {
+      throw Exception('Error fetching comic: $e');
+    }
+  }
+
+  Future<ComicDetailData> fetchComicDetail(String slug) async {
+    // URL: .../comic/komikcast/detail/:slug
+    final url = '$_baseUrl/comic/komikcast/detail/$slug'; //
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        // Cek struktur JSON: "success": true dan "data" ada
+        if (data['success'] == true && data['data'] != null) {
+          return ComicDetailData.fromJson(data['data']); //
+        }
+      }
+      throw Exception('Gagal load Detail Comic');
+    } catch (e) {
+      throw Exception('Error fetching comic detail: $e');
+    }
+  }
+
+  // ... import model comic_read_model.dart pastikan sudah diimport
+
+  // === TAMBAHKAN INI: Fetch Chapter Images ===
+  Future<ComicReadData> fetchComicChapter(String slug) async {
+    // URL: .../comic/komikcast/chapter/:slug
+    final url = '$_baseUrl/comic/komikcast/chapter/$slug';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        if (data['success'] == true && data['data'] != null) {
+          return ComicReadData.fromJson(data['data']);
+        }
+      }
+      throw Exception('Gagal load Chapter');
+    } catch (e) {
+      throw Exception('Error fetching chapter: $e');
     }
   }
 }
