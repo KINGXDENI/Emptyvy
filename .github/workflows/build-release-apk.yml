@@ -1,0 +1,84 @@
+name: Flutter Build & Release
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # Agar bisa dijalankan manual jika perlu
+
+permissions:
+  contents: write # Izin WAJIB untuk membuat/edit Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Setup Java (Dibutuhkan untuk build Android)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 2. Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          # flutter-version: '3.19.0' # Opsional: jika ingin versi spesifik
+
+      # 3. Install Dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Ambil Versi dari pubspec.yaml
+      - name: Get Version from pubspec.yaml
+        id: get_version
+        run: |
+          # Mengambil baris version, menghapus spasi, dan mengambil nilainya
+          VERSION=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          echo "Versi terdeteksi: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # 5. Build APK
+      # Catatan: --release butuh signing config di build.gradle. 
+      # Jika belum setting keystore, gunakan --debug atau atur signing key di secret.
+      - name: Build APK
+        run: flutter build apk --release --no-tree-shake-icons
+
+      # 6. Rename & Compress (Zip & Gzip)
+      - name: Compress & Prepare Artifacts
+        run: |
+          mkdir -p build/artifacts
+          
+          # Nama file dasar
+          FILENAME="emptyvy-v${{ env.VERSION }}"
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          
+          # Copy APK asli dan rename
+          cp $APK_PATH build/artifacts/$FILENAME.apk
+          
+          # Buat ZIP
+          zip -j build/artifacts/$FILENAME.zip $APK_PATH
+          
+          # Buat GZIP
+          gzip -c $APK_PATH > build/artifacts/$FILENAME.tar.gz
+          
+          # List file untuk memastikan
+          ls -l build/artifacts/
+
+      # 7. Create or Update Release
+      # Ini bagian kuncinya: allowUpdates: true akan menimpa release lama jika tag sama
+      - name: Release to GitHub
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ env.VERSION }}"
+          name: "Release v${{ env.VERSION }}"
+          body: "Automated build for version ${{ env.VERSION }}."
+          artifacts: "build/artifacts/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true        # PENTING: Mengizinkan update release yang sudah ada
+          replacesArtifacts: true   # PENTING: Menimpa file lama dengan yang baru
+          makeLatest: true
